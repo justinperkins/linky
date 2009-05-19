@@ -1,0 +1,6 @@
+env:
+  host: example.com
+  user: user-name
+  remote: home-dir/sub-dir/linky.yml
+  local: some-dir/linky.yml # used to blindly update the remote file, not required
+  temp: tmp.linky

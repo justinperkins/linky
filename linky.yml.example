@@ -1,0 +1,11 @@
+info:
+  title: title of your linky site
+  description: description of your linky site
+
+items:
+  item1:
+    some_field: some value
+    some_other_field: some other value
+    link: http://www.example.com/some/path # this is a special key for linky
+    discovery_date: 2009,01,01 # this is a special key for linky with a special syntax
+    background_image: http://www.example.com/images/some/path.jpg # this is a special key for linky
