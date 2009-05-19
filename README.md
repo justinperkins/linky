@@ -6,7 +6,7 @@ you make a list of stuff in yaml and I display it in html and atom via some PHP
 
 I have included a ruby script in the bin to help create/update your linky file, run it with the --help for help like: ruby ./linky_worker.rb --help
 
-You will want to setup your config file before using it.
+You will want to setup your config file before using it. An assumption is made that you already have your remote host setup with your public key for authentication, therefore you only provide your remote host and username, not your password
 
 # image resizer script
 
