@@ -20,3 +20,7 @@ currently dependent on version 0.4.1
 the linky worker script is a ruby script that depends on the following gems: Net::SSH, Net:SFTP
 
 the linky image resizer is an apple script requires a Mac environemnt
+
+# usage
+
+linky is freely distributable under the terms of an MIT-style license
