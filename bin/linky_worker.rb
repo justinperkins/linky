@@ -92,6 +92,16 @@ if __FILE__ == $0
   LinkyWorker.new do |linky|
     switch = ARGV.first
     case switch
+    when '--help', '-?'
+      puts 'Help info for linky worker script'
+      puts '-d [optional local file path]'
+      puts "\tupdate your remote linky file with whatever is stored in the local file defined in your config or provided as an argument\n"
+      puts '-s'
+      puts "\tsetup your linky file on the remote server, with whatever fields you want\n"
+      puts '-a'
+      puts "\tdefault behavior when no arugments provided, adds a new item to your remote linky file and creates one if none is found\n"
+      puts '--help, -?'
+      puts "\tthis help"
     when '-d'
       if linky.data_file || ARGV[1]
         linky.update_remote_from_local
