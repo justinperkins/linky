@@ -22,7 +22,9 @@ currently dependent on version 0.4.1
 
 the linky worker script is a ruby script that depends on the following gems: Net::SSH, Net:SFTP
 
-the linky image resizer is an apple script requires a Mac environemnt
+you'll need ruby in your environment to run the helper scripts, plus the following gems: net-ssh, net-sftp, hpricot
+
+some helper scripts are mac only but platform independent versions are encouraged if you want to write one
 
 # usage
 
