@@ -2,17 +2,21 @@
 require 'rubygems'
 require 'net/ssh'
 require 'net/sftp'
-
 class LinkyWorker
 
   CONFIG = './config.yml'
   
-  attr_reader :config, :data_file
+  attr_reader :config, :data_file, :uploader, :remote, :local
 
-  def initialize
-    @config = File.open(CONFIG) { |f| YAML::load(f) }
-    @config = @config['env'] if @config
-    @data_file = @config['local']
+  def initialize(config = nil)
+    @config = File.open(config || CONFIG) { |f| YAML::load(f) }
+    @config = @config['env'] if @config && @config['env']
+
+    # convert self-referencing keys to their respective values
+    @config.each { |k,v| @config[k] = @config[v.to_s] if v.is_a?(Symbol) }
+
+    @local_data_file = File.join(@config['local_base'], 'linky.yml')
+    @remote_data_file = File.join(@config['remote_base'], 'linky.yml')
     Net::SFTP.start(@config['host'], @config['user']) do |sftp|
       @uploader = sftp
       yield self
@@ -21,16 +25,17 @@ class LinkyWorker
   end
   
   def fetch_remote
-    @remote = @uploader.download!(@config['remote']) rescue nil
-    @remote
+    @remote = @uploader.download!(@remote_data_file) rescue nil
+    @local = YAML::load(@remote)
+    @local
   end
   
   def update_remote_from_local(local = nil)
     # allow a passed in file to override the config file that is initialized at startup
-    puts "updating remote (#{ @config['remote'] }) with local file (#{ @data_file })"
-    @data_file = local if local
-    puts('no data file bud, at least put it in your config if you want this to work') and return unless @data_file
-    @uploader.upload!(@data_file, @config['remote'])
+    @local_data_file = local if local
+    puts "updating remote (#{ @remote_data_file }) with local file (#{ @local_data_file })"
+    puts('no data file bud, at least put it in your config if you want this to work') and return unless @local_data_file
+    @uploader.upload!(@local_data_file, @remote_data_file)
     puts 'all done'
   end
   
@@ -41,35 +46,44 @@ class LinkyWorker
     puts 'description:'
     description = STDIN.gets.strip
     puts 'comma separated fields (link, background_image and discovery_date are magic, you should use them)'
-    fields = STDIN.gets.strip.split(',')
-    @local = {"info" => {"title" => title, "description" => description}, "items" => {"item1" => fields.inject({}){ |m, i| m[i] = ''; m; }}}
+    fields = STDIN.gets.strip.split(',').collect { |f| f.strip }
+    @local = {"info" => {"title" => title, "description" => description}, "fields" => fields}
     send_local_data_to_remote
   end
   
-  def add_entry_to_remote
-    puts "downloading linky file from server at #{ @config['remote'] }"
+  def prompt_for_entry_and_send_to_remote
+    puts "downloading linky file from server at #{ @remote_data_file }"
     
     if fetch_remote
-      @local = YAML::load(@remote)
-      items = @local['items']
-      first_item = items[items.keys.first]
-      @local['items']["item#{ items.keys.size + 1 }"] = input_for_item(first_item.keys)
+      self.add_entry(input_for_item(@local['fields']))
       send_local_data_to_remote
     else
       puts 'file not found, would you like to set one up?'
       if STDIN.gets.strip =~ /y[es]?/
         setup
-        @local['items']['item1'] = input_for_item(@local['items']['item1'].keys)
+        self.add_entry(input_for_item(@local['fields']))
         send_local_data_to_remote
       end
     end
   end
   
+  def add_entry(entry)
+    @local['items'] ||= {}
+    @local['items']["item#{ @local['items'].keys.size + 1 }"] = entry
+  end
+  
+  def send_local_data_to_remote(local = nil)
+    local ||= @local
+    puts 'updating file on linky server from in-memory data'
+    local_linky = File.join(@config['local_base'], 'linky.yml')
+    File.open(local_linky, 'w+') { |f| f.write(local.to_yaml) }
+    update_remote_from_local(local_linky)
+  end
+
   private
   def input_for_item(fields)
     puts "adding a new item to your linky"
     fields.inject({}) do |memo, item|
-      item.strip!
       puts "enter a value for the #{ item } (#{ item == 'discovery_date' ? 'leave blank for today' : 'or enter to leave blank' })"
       memo[item] = STDIN.gets.strip
       if memo[item].empty? && item == 'discovery_date'
@@ -77,14 +91,6 @@ class LinkyWorker
       end
       memo
     end
-  end
-
-  def send_local_data_to_remote
-    puts 'updating file on linky server from in-memory data'
-    # net/sftp does not support uploading a file if it doesn't exist locally, so we must create a tmp file
-    File.open(@config['temp'], 'w+') { |f| f.write(@local.to_yaml) }
-    update_remote_from_local(@config['temp'])
-    File.delete(@config['temp'])
   end
 end
 
@@ -104,14 +110,14 @@ if __FILE__ == $0
       puts "\tthis help"
     when '-d'
       if linky.data_file || ARGV[1]
-        linky.update_remote_from_local
+        linky.update_remote_from_local(ARGV[1])
       else
-        puts 'need data file, try ./linky.rb -d path/to/linky.yml'
+        puts 'need data file, try ./linky.rb -d path/to/linky.yml and make sure the file exists'
       end
     when '-s'
       linky.setup
     when '-a', nil
-      linky.add_entry_to_remote
+      linky.prompt_for_entry_and_send_to_remote
     end
   end
 end

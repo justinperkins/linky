@@ -13,15 +13,19 @@ $linky = new Linky('./linky.yml');
 	  <style type="text/css">
 	    *{ margin:0; padding:0; }
 	    h1, h2{ display:none; }
-	    ul li{ display:inline; }
+	    ul li{
+	      list-style:none;
+	      float:left;
+	      width:100px;
+	      height:100px;
+	      background:transparent none no-repeat top left
+	    }
 	    ul li.no-link, ul li a{
 	      display:block;
 	      float:left;
 	      width:100px;
 	      height:100px;
 	      text-indent:-9999px;
-	      background-color:red;
-	      border:1px solid #ccc;
 	    }
 	  </style>
   </head>
