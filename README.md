@@ -20,8 +20,6 @@ You will want to setup your config file before using it. An assumption is made t
 linky itself depends on a pure-PHP YAML parsing library called spyc and available here: http://code.google.com/p/spyc/
 currently dependent on version 0.4.1
 
-the linky worker script is a ruby script that depends on the following gems: Net::SSH, Net:SFTP
-
 you'll need ruby in your environment to run the helper scripts, plus the following gems: net-ssh, net-sftp, hpricot
 
 some helper scripts are mac only but platform independent versions are encouraged if you want to write one
