@@ -13,7 +13,7 @@ $linky = new Linky('./linky.yml');
 	  <style type="text/css">
 	    *{ margin:0; padding:0; }
 	    h1, h2{ display:none; }
-	    ul li{
+	    ul li.entry{
 	      list-style:none;
 	      float:left;
 	      width:100px;
@@ -27,6 +27,7 @@ $linky = new Linky('./linky.yml');
 	      height:100px;
 	      text-indent:-9999px;
 	    }
+	    ul li.entry ul{ display:none; }
 	  </style>
   </head>
   <body>
@@ -34,7 +35,7 @@ $linky = new Linky('./linky.yml');
     <h2><?php echo $linky->description ?></h2>
     <ul>
       <?php foreach ($linky->items as $i => $entry) {?>
-        <li class="<?php if (!isset($entry['link'])) { echo 'no-link'; } ?>" style="background-image:url(<?php if (isset($entry['background_image'])) { echo $entry['background_image']; } ?>);">
+        <li class="entry <?php if (!isset($entry['link'])) { echo 'no-link'; } ?>" style="background-image:url(<?php if (isset($entry['background_image'])) { echo $entry['background_image']; } ?>);">
           <?php if (isset($entry['link'])) { echo '<a href="' . $entry['link'] . '">'; } ?>
           <ul>
           <?php foreach (array_keys($entry) as $j => $key) { ?>
