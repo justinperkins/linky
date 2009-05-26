@@ -40,7 +40,7 @@ class AmazonMusicWorker
   
   private
   def to_filename(string)
-    string.gsub(' ', '-')
+    string.gsub(' ', '-').gsub(/\&amp;/, 'and').gsub('&', 'and')
   end
 end
 

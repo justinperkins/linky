@@ -2,6 +2,7 @@
 require 'rubygems'
 require 'net/ssh'
 require 'net/sftp'
+require 'sha1'
 class LinkyWorker
 
   CONFIG = './config.yml'
@@ -48,6 +49,20 @@ class LinkyWorker
     puts 'comma separated fields (link, background_image and discovery_date are magic, you should use them)'
     fields = STDIN.gets.strip.split(',').collect { |f| f.strip }
     @local = {"info" => {"title" => title, "description" => description}, "fields" => fields}
+    send_local_data_to_remote
+  end
+  
+  def update_title_and_description
+    puts 'updating your linky'
+    fetch_remote
+    puts "the current title is #{ @local['info']['title'] }, what is the new title?"
+    title = STDIN.gets.strip
+    puts "the current description is #{ @local['info']['description'] }, what is the new description?"
+    description = STDIN.gets.strip
+    @local['info'] = {'title' => title, 'description' => description}
+
+    # set up the secret key if we don't have one already
+    @local['info']['secret_key'] = Digest::SHA1.hexdigest(Time.now.to_f.to_s) unless @local['info']['secret_key']
     send_local_data_to_remote
   end
   
@@ -100,12 +115,14 @@ if __FILE__ == $0
     case switch
     when '--help', '-?'
       puts 'Help info for linky worker script'
+      puts '-a'
+      puts "\tdefault behavior when no arugments provided, adds a new item to your remote linky file and creates one if none is found\n"
       puts '-d [optional local file path]'
       puts "\tupdate your remote linky file with whatever is stored in the local file defined in your config or provided as an argument\n"
       puts '-s'
       puts "\tsetup your linky file on the remote server, with whatever fields you want\n"
-      puts '-a'
-      puts "\tdefault behavior when no arugments provided, adds a new item to your remote linky file and creates one if none is found\n"
+      puts '-u'
+      puts "\tupdate the linky title and description\n"
       puts '--help, -?'
       puts "\tthis help"
     when '-d'
@@ -116,8 +133,12 @@ if __FILE__ == $0
       end
     when '-s'
       linky.setup
+    when '-u'
+      linky.update_title_and_description
     when '-a', nil
       linky.prompt_for_entry_and_send_to_remote
+    else
+      puts 'unknown option, use --help for known options'
     end
   end
 end

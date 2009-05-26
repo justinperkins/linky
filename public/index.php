@@ -3,7 +3,7 @@
 <?php
 include('./linky.php');
 
-$linky = new Linky('./linky.yml');
+$linky = new Linky('../linky.yml');
 ?>
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
   <head>
