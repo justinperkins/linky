@@ -28,8 +28,8 @@ class AmazonMusicWorker
   
   def process_image(image_url, data)
     image_name = to_filename("#{ data['artist'] }_#{ data['album'] }.jpg")
-    local_file = File.join(@linky.config['local_base'], 'imagery', image_name)
-    remote_file = File.join(@linky.config['remote_base'], 'imagery', image_name)
+    local_file = File.join(@linky.config['local_base'], 'public', 'imagery', image_name)
+    remote_file = File.join(@linky.config['remote_base'], 'public', 'imagery', image_name)
     File.open(local_file, 'w+') do |f|
       f.write(open(image_url).readlines)
     end

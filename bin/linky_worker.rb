@@ -48,7 +48,7 @@ class LinkyWorker
     description = STDIN.gets.strip
     puts 'comma separated fields (link, background_image and discovery_date are magic, you should use them)'
     fields = STDIN.gets.strip.split(',').collect { |f| f.strip }
-    @local = {"info" => {"title" => title, "description" => description}, "fields" => fields}
+    @local = {"info" => {"title" => title, "description" => description, 'secret_key' => Digest::SHA1.hexdigest(TIme.now.to_f.to_s)}, "fields" => fields}
     send_local_data_to_remote
   end
   
@@ -60,9 +60,6 @@ class LinkyWorker
     puts "the current description is #{ @local['info']['description'] }, what is the new description?"
     description = STDIN.gets.strip
     @local['info'] = {'title' => title, 'description' => description}
-
-    # set up the secret key if we don't have one already
-    @local['info']['secret_key'] = Digest::SHA1.hexdigest(Time.now.to_f.to_s) unless @local['info']['secret_key']
     send_local_data_to_remote
   end
   
