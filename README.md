@@ -30,9 +30,10 @@ some helper scripts are mac only but platform independent versions are encourage
   2. Copy configuration file from: bin/config.yml.example to bin/config.yml
   3. Setup the config file for your environemnt, assumes your SSH public keys are already configured
   4. Run the setup script: bin/linky_worker.rb -s
-  5. Copy the following to your production server: index.php, linky.php, linky.yml, spyc/
-  6. Add items to your linky file (will automatically deploy to your production environment): bin/linky_worker.rb -a
-  7. See bin/amazon_music_worker.rb for example of an automated task for updating your linky
+  5. Copy the public directory to your production environment
+  6. Copy the linky.yml file that was generated in step 5 to a directory one-level up from the public directory (make sure the linky.yml file is not publicly accessible because there is a secret key in that file that is for your eyes only)
+  7. Add items to your linky file (will automatically deploy to your production environment): bin/linky_worker.rb -a
+  8. See bin/amazon_music_worker.rb for example of an automated task for updating your linky
 
 # license
 
