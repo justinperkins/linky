@@ -81,7 +81,7 @@ class LinkyWorker
   
   def add_entry(entry)
     @local['items'] ||= {}
-    @local['items']["item#{ @local['items'].keys.size + 1 }"] = entry
+    @local['items']["item#{ Time.now.to_i.to_s }"] = entry
   end
   
   def send_local_data_to_remote(local = nil)
