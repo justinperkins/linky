@@ -1,5 +1,6 @@
 #!/usr/bin/env ruby
 require 'linky_worker'
+require 'iconv' # for working with I18N strings
 require 'gists/amazon_mp3_music'
 require 'gists/image_resizer'
 
@@ -27,7 +28,7 @@ class AmazonMusicWorker
   end
   
   def process_image(image_url, data)
-    image_name = to_filename("#{ data['artist'] }_#{ data['album'] }.jpg")
+    image_name = parameterize("#{ data['artist'] }_#{ data['album'] }.jpg")
     local_file = File.join(@linky.config['local_base'], 'public', 'imagery', image_name)
     remote_file = File.join(@linky.config['remote_base'], 'public', 'imagery', image_name)
     File.open(local_file, 'w+') do |f|
@@ -39,8 +40,23 @@ class AmazonMusicWorker
   end
   
   private
-  def to_filename(string)
-    string.gsub(' ', '-').gsub(/\&amp;/, 'and').gsub('&', 'and')
+  def parameterize(string, sep = '-')
+    # replace accented chars with ther ascii equivalents
+    parameterized_string = transliterate(string)
+    # Turn unwanted chars into the seperator
+    parameterized_string.gsub!(/[^a-z0-9\-_\+]+/i, sep)
+    unless sep.empty? || sep.nil?
+      re_sep = Regexp.escape(sep)
+      # No more than one of the separator in a row.
+      parameterized_string.gsub!(/#{re_sep}{2,}/, sep)
+      # Remove leading/trailing separator.
+      parameterized_string.gsub!(/^#{re_sep}|#{re_sep}$/i, '')
+    end
+    parameterized_string.downcase
+  end
+
+  def transliterate(string)
+    Iconv.iconv('ascii//ignore//translit', 'utf-8', string).to_s
   end
 end
 
